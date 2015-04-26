@@ -1,0 +1,10 @@
+float64 desiredMapRes
+float64 currentMapRes
+int64[] occGrid
+int64 mapWidth
+int64 mapHeight
+---
+int64 newMapWidth
+int64 newMapHeight
+float64 newRes
+int64[] newOccGrid

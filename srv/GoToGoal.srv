@@ -1,0 +1,4 @@
+float64 xGoal
+float64 yGoal
+---
+int64 status

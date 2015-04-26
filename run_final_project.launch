@@ -1,0 +1,18 @@
+<launch>
+
+
+
+
+<node pkg="final_project_adkins_caracappa" name="frontiers_node" type="frontiersNode.py" launch-prefix="xterm -e" />
+
+<node pkg="final_project_adkins_caracappa" name="driving_server" type="driving_server.py" launch-prefix="xterm -e" />
+
+<node pkg="final_project_adkins_caracappa" name="map_node" type="mapNode.py" launch-prefix="xterm -e" />
+
+<node pkg="final_project_adkins_caracappa" name="a_star_server" type="MAPRES_a_star_server.py" launch-prefix="xterm -e" />
+
+<node pkg="final_project_adkins_caracappa" name="Lab4_code" type="MAPRES_movinglab4.py" launch-prefix="xterm -e" />
+
+
+
+</launch>
