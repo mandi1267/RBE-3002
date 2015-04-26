@@ -323,7 +323,8 @@ def moveBetweenWaypoints(currentCell, nextCell):
     print "start using service"
     resp = driveFunction(distToTravel, speed)
     if (resp.status == 1):
-        backupDist = -0.2
+        print "backing up"
+        backupDist = -0.5
         rospy.wait_for_service('drive_straight')
         driveFunction = rospy.ServiceProxy('drive_straight', DriveStraight)
         print "start using service"

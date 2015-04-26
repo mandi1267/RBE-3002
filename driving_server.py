@@ -100,7 +100,7 @@ def driveStraight(req):
     # stop the robot when it finishes travelling the indicated distance
     for i in range(3):
         publishTwist(0,0)
-        time.sleep(poleRate)
+        time.sleep(1)
 
     if driveSuccessful:
         return DriveStraightResponse(0)

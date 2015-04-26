@@ -27,6 +27,10 @@ def increaseMapResolution(occupancyGridData):
 
     # fill the new map with zeroes
     newMap = [0]*(newMapHeight*newMapWidth)
+
+    if (currentMapRes == desiredMapRes):
+        newMap = occGrid
+        return newMap, newMapHeight, newMapWidth
     
     # go through every group of cells multiplier by multiplier and check to see if htere is any free space or obstacles
     for i in range(newMapHeight):
