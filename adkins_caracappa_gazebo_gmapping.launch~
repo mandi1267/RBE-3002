@@ -1,3 +1,0 @@
-<launch>
-  <include file="$(find final_project_adkins_caracappa)/adkins_caracappa_gmapping.launch.xml" />
-</launch>
