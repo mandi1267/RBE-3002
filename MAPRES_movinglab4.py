@@ -321,8 +321,14 @@ def moveBetweenWaypoints(currentCell, nextCell):
     rospy.wait_for_service('drive_straight')
     driveFunction = rospy.ServiceProxy('drive_straight', DriveStraight)
     print "start using service"
-    driveFunction(distToTravel, speed)
-
+    resp = driveFunction(distToTravel, speed)
+    if (resp.status == 1):
+        backupDist = -0.2
+        rospy.wait_for_service('drive_straight')
+        driveFunction = rospy.ServiceProxy('drive_straight', DriveStraight)
+        print "start using service"
+        resp = driveFunction(backupDist, speed)
+        
 # change the angle between waypoints
 # comingFrom is the waypoint that the robot just came from
 # atThisPoint is the waypoint that the robot is at
@@ -434,7 +440,11 @@ def driveWaypointsInitial(robotPath):
         updateGridCells([currentNode, goalNode], 6)
         print "moving between nodes"
         # drive to the next waypoint
-        moveBetweenWaypoints(currentNode, nextWayPoint) 
+        moveBetweenWaypoints(currentNode, nextWayPoint)
+
+        if (occGrid[makeNumFromXY(goalNode[0], goalNode[1])] != 0):
+                break
+       
         # update the notes
         prevNode = currentNode
         lastRecordedNode = nextWayPoint

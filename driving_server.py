@@ -49,11 +49,18 @@ def read_odometry(data):
 
 
 # takes in a DriveStraight srv with the speed and the distance to drive
-# distance to drive must be nonnegative
+# speed should always be positive
+# distance to drive can be positive (driving forward) or negative (backing up)
 def driveStraight(req):
     global bumperState
     speed = req.driveSpeed
     distance = req.driveDist
+
+    if (distance < 0):
+        speed = abs(speed) * -1
+        distance = abs(distance)
+    else:
+        speed = abs(speed)
 
     print "distance %f" % (distance)
     print "speed %f" % (speed)

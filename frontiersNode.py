@@ -19,6 +19,7 @@ from geometry_msgs.msg import Point
 # returns list of fronteirs
 def identifyFrontiers():
 	allFrontiers = []
+        frontierTooShortLimit = 2
 
 	frontierCells = getAllFrontierCells()
 	while (len(frontierCells) != 0):
@@ -40,7 +41,8 @@ def identifyFrontiers():
 			if (finishedFindingNeighbors != len(currentFrontier)):
 				checkForNeighbors = currentFrontier[finishedFindingNeighbors]
 				cellNeighbors = getNeighbors(checkForNeighbors)
-		allFrontiers.append(currentFrontier)
+                if (len(currentFrontier) > frontierTooShortLimit):
+                        allFrontiers.append(currentFrontier)
         print allFrontiers
 	print len(allFrontiers)
 	return allFrontiers
@@ -138,10 +140,13 @@ def pickFrontier(listOfFrontiers):
 	# might change a lot
 	longestFrontier = listOfFrontiers[0]
 	for frontier in listOfFrontiers:
+                print len(longestFrontier)
+                print len(frontier)
 		if len(frontier) > len(longestFrontier):
 			longestFrontier = frontier
+                        print "selecting new frontier"
 
-	return frontier
+	return longestFrontier
 
 
 def getFrontierCentroid(frontier):
@@ -157,7 +162,12 @@ def getFrontierCentroid(frontier):
 	xTotal = xTotal/cellCount
 	yTotal = yTotal/cellCount
 
-	closestCell = frontier[0]
+        closestCell = getClosestCell(xTotal, yTotal)
+        closestCellNum = makeNumFromXY(closestCell[0], closestCell[1])
+
+        if (occGrid[closestCellNum] == 0):
+                return closestCell
+
 	xDiff = abs(cell[0] - closestCell[0])
 	yDiff = abs(cell[1] - closestCell[1])
 
@@ -179,11 +189,11 @@ def getClosestCell(xCoord, yCoord):
     # calculate the most likely cell by rounding the x and y coordinates to the numbers divisible by mapRes
     tempXCoord = (xCoord/mapRes)
     tempXCoord = round(tempXCoord, 0)
-    tempXCoord = tempXCoord*mapRes
+    tempXCoord = tempXCoord*mapRes - mapRes/2
 
     tempYCoord = (yCoord/mapRes)
     tempYCoord = round(tempYCoord, 0)
-    tempYCoord = tempYCoord*mapRes
+    tempYCoord = tempYCoord*mapRes - mapRes/2
 
     # calculate the temporary cell number
     tempCell = (tempXCoord, tempYCoord) 
