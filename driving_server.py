@@ -43,9 +43,24 @@ def read_odometry(data):
     global odomY
     global odomTheta
 
-    odomX = px
-    odomY = py
+#    odomX = px
+#    odomY = py
     odomTheta = yaw
+
+    odomFramePoint = PointStamped()
+    tol = 0.05
+    odomFramePoint.header.frame_id = "/odom"
+    odomFramePoint.point.x = px
+    odomFramePoint.point.y = py
+    odomFramePoint.point.z = 0
+
+    mapFramePoint = PointStamped()
+
+    mapListener.waitForTransform("/map", "/odom", rospy.Time(), rospy.Duration(20))
+    mapFramePoint = mapListener.transformPoint("map", odomFramePoint)
+
+    odomX = mapFramePoint.point.x
+    odomY = mapFramePoint.point.y 
 
 
 # takes in a DriveStraight srv with the speed and the distance to drive
@@ -59,6 +74,7 @@ def driveStraight(req):
     if (distance < 0):
         speed = abs(speed) * -1
         distance = abs(distance)
+        print "backing up"
     else:
         speed = abs(speed)
 
@@ -81,7 +97,7 @@ def driveStraight(req):
 
     # while the robot hasn't driven far enough, keep driving
     print "start running drive straight loop"
-    while (not ((distTraveled > (distance - tol)) and (distTraveled < (distance + tol)))):
+    while (not ((abs(distTraveled) > abs((distance - tol))) and (abs(distTraveled) < abs((distance + tol))))):
         # if ctrl c is pressed, stop the robot and break from the loop
         if rospy.is_shutdown():
             publishTwist(0,0)
@@ -182,11 +198,12 @@ def driving_server():
 # drive unti lthe robot is facing the given point
 def driveUntilFacingPoint(req):
 
-
+    slowDownVal = 0.2
     poleRate = 0.075
     speed = 1
     angularVel = speed
     tol = 0.025
+    maxProportionalComp = 0.5
 
     # set a point with the point to face it the map frame
     mapFrameGoal = PointStamped()
@@ -216,6 +233,10 @@ def driveUntilFacingPoint(req):
         else:
             angularVel = -1*speed
 
+        if (abs(goalInRobotFrame.point.y) < slowDownVal):
+            # proportional control when within slowDownVal
+            angularVel = angularVel*(1-maxProportionalComp) + maxProportionalComp*angularVel*(abs((goalInRobotFrame.point.y)/slowDownVal))
+       
         # publish a twist message
         if bumperState != 0:   
             driveSuccessful = False 
@@ -231,7 +252,6 @@ def driveUntilFacingPoint(req):
         
     for i in range(3):
         publishTwist(0,0)
-        time.sleep(poleRate)
 
     if driveSuccessful:
         return FacePointResponse(0)
@@ -297,6 +317,9 @@ if __name__== "__main__":
     bumperState = 0
 
     bumper_sub = rospy.Subscriber("mobile_base/events/bumper", BumperEvent, readBumper, queue_size=1) # Callback function to handle bumper events
+
+    global mapListener
+    mapListener = tf.TransformListener()
 
 
     # set up the publishers and subscribers for the twist messages, odometry messages, and bumper event messages
