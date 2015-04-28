@@ -299,20 +299,14 @@ def preexplorationMove():
     driveFunction(0.06, speed)
 
 def goal_nav_ready(data):
-    global goalReady
-    goalReady = True
-
-def driving_ready(data): 
-    global drivingReady 
-    drivingReady = True
-
-def astar_ready(data):
-    global aStarReady 
-    aStarReady = True
+    if (data.data):
+        global goalReady
+        goalReady = True
     
-def map_ready(data):
-    global mapReady 
-    mapReady = True
+def mapRespRecvd(data):
+    if (not data.data):
+        global mapResp
+        mapResp = True
 
 # make a point object from an x and y coordinate
 def makePoint(xCoord, yCoord):
@@ -371,41 +365,7 @@ if __name__ == '__main__':
     # Change this node name to include your username
     rospy.init_node('main_final_project')
 
-    global goalReady
-    global drivingReady 
-    global aStarReady 
-    global mapReady 
-
-    goalReady = False
-    drivingReady = False
-    aStarReady = False
-    mapReady = False
-
-    global mapReceived 
-    mapReceived = False
-
-    global frontierNodePub 
-    frontierNodePub = rospy.Publisher('frontier_node_ready', Bool, queue_size=3)
-
-    global goalNavSub
-    global drivingSub
-    global aStarSub
-    global mapSub
-
-    goalNavSub = rospy.Subscriber('goalnav_node_ready', Bool, goal_nav_ready, queue_size=3)
-    drivingSub = rospy.Subscriber('driving_node_ready', Bool, driving_ready, queue_size=3)
-    aStarSub = rospy.Subscriber('astar_node_ready', Bool, astar_ready, queue_size=3)
-    mapSub = rospy.Subscriber('map_node_ready', Bool, map_ready, queue_size=3)
-
-    time.sleep(5)
-
-    ready = Bool()
-    ready.data = True
-    frontierNodePub.publish(ready)
-    print "waiting for other nodes"
-    while (not (goalReady and drivingReady and aStarReady and mapReady)) and (not rospy.is_shutdown()):
-        1+1
-    print "done waiting"
+    
 
     global frontierPub
     global smallFrontPub0
@@ -423,6 +383,34 @@ if __name__ == '__main__':
     smallFrontPub3 = rospy.Publisher('smallFrontier3_grid_cells', GridCells, queue_size=3)
     smallFrontPub4 = rospy.Publisher('smallFrontier4_grid_cells', GridCells, queue_size=3)
 
+    global mapReceived 
+    mapReceived = False
+
+    global frontierNodePub 
+    frontierNodePub = rospy.Publisher('frontier_node_ready', Bool, queue_size=3)
+    frontierNodeSub = rospy.Subscriber('frontier_node_ready', Bool, mapRespRecvd, queue_size=3)
+
+    global mapResp
+    mapResp = False
+    global goalReady
+    goalReady = False
+    ready = Bool()
+    ready.data = False
+
+
+
+    goalNavPub = rospy.Publisher('goalnav_node_ready', Bool, queue_size=3)
+    goalNavSub = rospy.Subscriber('goalnav_node_ready', Bool, goal_nav_ready, queue_size=3)
+
+    while (not goalReady) and (not rospy.is_shutdown()):
+        1+1
+    goalNavPub.publish(ready)
+    ready.data = True
+    while (not mapResp) and (not rospy.is_shutdown()):
+        frontierNodePub.publish(ready)
+        time.sleep(0.1)
+    
+    
     while (mapReceived == False and (not rospy.is_shutdown())):
     	1+1
 

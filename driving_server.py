@@ -258,58 +258,15 @@ def driveUntilFacingPoint(req):
     else:
         return FacePointResponse(1)
 
-def goal_nav_ready(data):
-    global goalReady
-    goalReady = True
-
-def frontier_ready(data): 
-    global frontierReady 
-    frontierReady = True
-
-def astar_ready(data):
-    global aStarReady 
-    aStarReady = True
-    
-def map_ready(data):
-    global mapReady 
-    mapReady = True
+def getReadyResponse(data):
+    if (data.data == False):
+        global aStarReady
+        aStarReady = True
     
 
 if __name__== "__main__":
     rospy.init_node('driving_server')
 
-    global goalReady
-    global frontierReady 
-    global aStarReady 
-    global mapReady 
-
-    goalReady = False
-    frontierReady = False
-    aStarReady = False
-    mapReady = False
-
-    global drivingNodePub 
-    drivingNodePub = rospy.Publisher('driving_node_ready', Bool, queue_size=3)
-
-    global goalNavSub
-    global frontierCalcSub
-    global aStarSub
-    global mapSub
-
-    goalNavSub = rospy.Subscriber('goalnav_node_ready', Bool, goal_nav_ready, queue_size=3)
-    frontierCalcSub = rospy.Subscriber('frontier_node_ready', Bool, frontier_ready, queue_size=3)
-    aStarSub = rospy.Subscriber('astar_node_ready', Bool, astar_ready, queue_size=3)
-    mapSub = rospy.Subscriber('map_node_ready', Bool, map_ready, queue_size=3)
-
-    time.sleep(5)
-
-    ready = Bool()
-    ready.data = True
-    drivingNodePub.publish(ready)
-    print "waiting for other nodes"
-    while (not (goalReady and frontierReady and aStarReady and mapReady)) and (not rospy.is_shutdown()):
-        1+1
-    print "done waiting"
 
     global twistPub
 
@@ -325,5 +282,21 @@ if __name__== "__main__":
     # set up the publishers and subscribers for the twist messages, odometry messages, and bumper event messages
     sub = rospy.Subscriber("odom", Odometry, read_odometry, queue_size=1) # Callback function to read in robot Odometry messages
     twistPub = rospy.Publisher('cmd_vel_mux/input/teleop', Twist, queue_size =1 ) # Publisher for commanding robot motion
+
+
+    global drivingNodePub
+    global drivingNodeSub
+    global aStarReady
+    aStarReady = False
+
+    drivingNodeSub = rospy.Subscriber('driving_node_ready', Bool, getReadyResponse, queue_size = 3)
+    drivingNodePub = rospy.Publisher('driving_node_ready', Bool, queue_size=3) 
+
+    readyMsg = Bool()
+    readyMsg.data = True
+    
+    while(not aStarReady) and (not rospy.is_shutdown()):
+        drivingNodePub.publish(readyMsg)
+        time.sleep(0.1)
     
     driving_server()

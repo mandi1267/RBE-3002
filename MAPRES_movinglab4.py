@@ -576,20 +576,14 @@ def goal_nav_server():
     rospy.spin()
 
 def astar_ready(data):
-    global aStarReady
-    aStarReady = True
+    if (data.data):
+        global aStarReady
+        aStarReady = True
 
-def driving_ready(data): 
-    global drivingReady 
-    drivingReady = True
-
-def frontier_ready(data):
-    global frontierReady 
-    frontierReady = True
-    
-def map_ready(data):
-    global mapReady 
-    mapReady = True
+def goalNavResp(data):
+    if (not data.data):
+        global frontierRespRecvd
+        frontierRespRecvd = True
     
 
 
@@ -597,40 +591,6 @@ def map_ready(data):
 if __name__ == '__main__':
     # Change this node name to include your username
     rospy.init_node('main_code_for_lab4')
-
-    global aStarReady
-    global drivingReady 
-    global frontierReady 
-    global mapReady 
-
-    aStarReady = False
-    drivingReady = False
-    frontierReady = False
-    mapReady = False
-
-    global goalNavNodePub 
-    goalNavNodePub = rospy.Publisher('goalnav_node_ready', Bool, queue_size=3)
-
-    global aStarSub
-    global drivingSub
-    global frontierSub
-    global mapSub
-
-    aStarSub = rospy.Subscriber('astar_node_ready', Bool, astar_ready, queue_size=3)
-    drivingSub = rospy.Subscriber('driving_node_ready', Bool, driving_ready, queue_size=3)
-    frontierSub = rospy.Subscriber('frontier_node_ready', Bool, frontier_ready, queue_size=3)
-    mapSub = rospy.Subscriber('map_node_ready', Bool, map_ready, queue_size=3)
-
-    time.sleep(5)
-
-    ready = Bool()
-    ready.data = True
-    goalNavNodePub.publish(ready)
-    print "waiting for other nodes"
-    while (not (aStarReady and drivingReady and frontierReady and mapReady)) and (not rospy.is_shutdown()):
-        1+1
-
-    print "initialized"
 
     global mapReceived
     mapReceived = False
@@ -669,17 +629,31 @@ if __name__ == '__main__':
 
     
     pubsInitialized = True
-    
-    global startAdded
-    global goalAdded
 
+    global aStarReady
+    aStarReady = False
+    global frontierRespRecvd
+    frontierRespRecvd = False
 
-
-#    rospy.sleep(rospy.Duration(2, 0))
+    global goalNavNodePub 
+    goalNavNodePub = rospy.Publisher('goalnav_node_ready', Bool, queue_size=3)
+    goalNavNodeSub = rospy.Subscriber('goalnav_node_ready', Bool, goalNavResp, queue_size=3)
+    global aStarPub
+    aStarPub = rospy.Publisher('astar_node_ready', Bool, queue_size=3)
 
     ready = Bool()
     ready.data = False
-    goalNavNodePub.publish(ready)
+
+    aStarSub = rospy.Subscriber('astar_node_ready', Bool, astar_ready, queue_size=3)
+
+    while (not aStarReady) and (not rospy.is_shutdown()):
+        1+1
+    aStarPub.publish(ready)
+    ready.data = True
+
+    while (not frontierRespRecvd) and (not rospy.is_shutdown()):
+        goalNavNodePub.publish(ready)
+        time.sleep(0.1)
 
     print "waiting for map"
     while (not mapReceived) and (not rospy.is_shutdown()):

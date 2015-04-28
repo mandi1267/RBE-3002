@@ -203,65 +203,17 @@ def read_map(data):
 
     workingOnMap = False
 
-def goal_nav_ready(data):
-    global goalReady
-    goalReady = True
-    if (data.data == False) :
-        global waitingForMap
-        waitingForMap = True
 
 def frontier_ready(data): 
-    global frontierReady 
-    frontierReady = True
+    if (data.data):
+        global frontierReady 
+        frontierReady = True
 
-def astar_ready(data):
-    global aStarReady 
-    aStarReady = True
-    
-def driving_ready(data):
-    global drivingReady 
-    drivingReady = True
 
 if __name__== "__main__":
 
     rospy.init_node('map_expander')
-
-    global waitingForMap
-    waitingForMap = False
-
-    global goalReady
-    global frontierReady 
-    global aStarReady 
-    global drivingReady 
-
-    goalReady = False
-    frontierReady = False
-    aStarReady = False
-    drivingReady = False
-
-    global mapNodePub 
-    mapNodePub = rospy.Publisher('map_node_ready', Bool, queue_size=3)
-
-    global goalNavSub
-    global frontierCalcSub
-    global aStarSub
-    global drivingSub
-
-    goalNavSub = rospy.Subscriber('goalnav_node_ready', Bool, goal_nav_ready, queue_size=3)
-    frontierCalcSub = rospy.Subscriber('frontier_node_ready', Bool, frontier_ready, queue_size=3)
-    aStarSub = rospy.Subscriber('astar_node_ready', Bool, astar_ready, queue_size=3)
-    drivingSub = rospy.Subscriber('driving_node_ready', Bool, driving_ready, queue_size=3)
-
-    time.sleep(5)
-
-    ready = Bool()
-    ready.data = True
-    mapNodePub.publish(ready)
-
-    print "waiting for other nodes"
-    while (not (goalReady and frontierReady and aStarReady and drivingReady)) and (not rospy.is_shutdown()):
-        1+1
-    print "done waiting"
+   
 
     global workingOnMap
     workingOnMap = False
@@ -274,9 +226,6 @@ if __name__== "__main__":
     global scaledMapPub
     global obstacleExpansionDimensionPub
 
-    while (not waitingForMap):
-        1+1
-
     obstacleExpansionDimensionPub = rospy.Publisher('expansion_size', Float64, queue_size = 3)
 
     global expansionWidth
@@ -285,10 +234,26 @@ if __name__== "__main__":
     desiredMapRes = 0.2
     # set deisredMap res to some multiple of actual map res
 
+
+    global frontierReady
+    frontierReady = False
+
+    mapNodePub = rospy.Publisher('map_node_ready', Bool, queue_size=3)
+
+    global frontierCalcSub
+    
+    ready = Bool()
+    ready.data = False
+    frontiersPub = rospy.Publisher('frontier_node_ready', Bool, queue_size=3)
+    frontierCalcSub = rospy.Subscriber('frontier_node_ready', Bool, frontier_ready, queue_size=3)
+
+    while (not frontierReady) and (not rospy.is_shutdown()):
+        1+1
+    frontiersPub.publish(ready)
+
     scaledMapPub = rospy.Publisher('res_changed_map', OccupancyGrid, queue_size=2)
     modifiedMapSub = rospy.Subscriber('res_changed_map', OccupancyGrid, checkMapReceived, queue_size = 3)
     mainMapSub = rospy.Subscriber('map', OccupancyGrid, read_map, queue_size = 3)
-
 
     expansionVal = Float64()
     expansionVal.data = expansionWidth

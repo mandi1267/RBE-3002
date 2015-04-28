@@ -354,21 +354,15 @@ def a_star_server():
     s = rospy.Service('a_star', Astar, handle_a_star)
     rospy.spin()
 
-def goal_nav_ready(data):
-    global goalReady
-    goalReady = True
-
 def driving_ready(data): 
-    global drivingReady 
-    drivingReady = True
+    if (data.data):
+        global drivingReady 
+        drivingReady = True
 
-def frontier_ready(data):
-    global frontierReady 
-    frontierReady = True
-    
-def map_ready(data):
-    global mapReady 
-    mapReady = True
+def a_star_resp(data):
+    if (not data.data):
+        global lab4Replied
+        lab4Replied = True
     
 
 # This is the program's main function
@@ -376,41 +370,6 @@ if __name__== "__main__":
 
 	
     rospy.init_node('a_star_server')
-
-    global goalReady
-    global drivingReady 
-    global frontierReady 
-    global mapReady 
-
-    goalReady = False
-    drivingReady = False
-    frontierReady = False
-    mapReady = False
-
-    global aStarNodePub 
-    aStarNodePub = rospy.Publisher('astar_node_ready', Bool, queue_size=3)
-
-    global goalNavSub
-    global drivingSub
-    global frontierSub
-    global mapSub
-
-    goalNavSub = rospy.Subscriber('goalnav_node_ready', Bool, goal_nav_ready, queue_size=3)
-    drivingSub = rospy.Subscriber('driving_node_ready', Bool, driving_ready, queue_size=3)
-    frontierSub = rospy.Subscriber('frontier_node_ready', Bool, frontier_ready, queue_size=3)
-    mapSub = rospy.Subscriber('map_node_ready', Bool, map_ready, queue_size=3)
-
-    time.sleep(5)
-
-    ready = Bool()
-    ready.data = True
-    aStarNodePub.publish(ready)
-
-    print "waiting for other nodes"
-    while (not (goalReady and drivingReady and frontierReady and mapReady)) and (not rospy.is_shutdown()):
-        1+1
-
-    print "done waiting"
 
     global mapResDefined
     global pathPub
@@ -432,4 +391,34 @@ if __name__== "__main__":
     gridCellPub = rospy.Publisher('grid_for_map', GridCells, queue_size=3)
     expansionWidthSub = rospy.Subscriber('expansion_size', Float64, read_expansionWidth, queue_size=1)
     pubsInitialized = True
+
+
+    global aStarNodePub 
+    aStarNodePub = rospy.Publisher('astar_node_ready', Bool, queue_size=3)
+    global astarNodeSub
+    aStarNodeSub = rospy.Subscriber('astar_node_ready', Bool, a_star_resp, queue_size=3)
+
+    global drivingReady
+    drivingReady = False
+    global lab4Replied
+    lab4Replied = False
+
+    drivingNodePub = rospy.Publisher('driving_node_ready', Bool, queue_size=3) 
+    drivingSub = rospy.Subscriber('driving_node_ready', Bool, driving_ready, queue_size=3)
+
+
+    while (not drivingReady) and (not rospy.is_shutdown()):
+        1+1
+    
+    ready = Bool()
+    ready.data = False
+
+    drivingNodePub.publish(ready)
+
+    ready.data = True
+
+    while (not lab4Replied) and (not rospy.is_shutdown()):
+        aStarNodePub.publish(ready)
+        time.sleep(0.1)
+
     a_star_server()
