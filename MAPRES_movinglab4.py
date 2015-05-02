@@ -453,8 +453,8 @@ def driveWaypointsInitial(robotPath):
         currentNode = getClosestCell(robotX, robotY)
 
         # check if within tolerance
-        withinXTol = ((goalNode[0] - mapRes) < currentNode[0]) and ((goalNode[0] + mapRes) > currentNode[0])
-        withinYTol = ((goalNode[1] - mapRes) < currentNode[1]) and ((goalNode[1] + mapRes) > currentNode[1])
+        withinXTol = ((goalNode[0] - 2*mapRes) < currentNode[0]) and ((goalNode[0] + 2*mapRes) > currentNode[0])
+        withinYTol = ((goalNode[1] - 2*mapRes) < currentNode[1]) and ((goalNode[1] + 2*mapRes) > currentNode[1])
         # if withint he tolreance, don't execute the rest of the loop
         if withinXTol and withinYTol:
             print "all done"
