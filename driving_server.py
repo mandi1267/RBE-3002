@@ -97,7 +97,8 @@ def driveStraight(req):
 
     # while the robot hasn't driven far enough, keep driving
     print "start running drive straight loop"
-    while (not ((abs(distTraveled) > abs((distance - tol))) and (abs(distTraveled) < abs((distance + tol))))):
+    while (abs(distTraveled) < abs(distance - tol)):
+    #while (not ((abs(distTraveled) > abs((distance - tol))) and (abs(distTraveled) < abs((distance + tol))))):
         # if ctrl c is pressed, stop the robot and break from the loop
         if rospy.is_shutdown():
             publishTwist(0,0)
