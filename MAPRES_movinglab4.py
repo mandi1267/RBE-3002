@@ -567,8 +567,9 @@ def moveToGoal(req):
     print "running a star"
     returnVal = a_star(startPos[0], startPos[1], goalPos[0], goalPos[1])
     if (occGrid[makeNumFromXY(startPos[0], startPos[1])] < 50): 
-        if (returnVal.throughObs == 1):
-            return GoToGoalResponse(0)
+        if (occGrid[makeNumFromXY(goalPos[0], goalPos[1])] < 50):
+            if (returnVal.throughObs == 1):
+                return GoToGoalResponse(0)
     path = fixPath(returnVal.pathX, returnVal.pathY)
     updateGridCells(path, 5)
     # calculate the way points of the path
