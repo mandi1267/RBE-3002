@@ -20,7 +20,7 @@ from std_msgs.msg import Bool
 
 
 def handle_a_star(req):
-
+    throughObs = 0
     print "a star"
 
     # get the starting cell, and goal cell
@@ -72,6 +72,7 @@ def handle_a_star(req):
                 current = predecessors[current]
                 fullPath.insert(0, current)
                 if getCostBetweenNeighbors(fullPath[0], fullPath[1]) > 2:
+                    throughObs = 1
                     print "path through obstacle"
             # update the grid cells a final time
             #updateGridCells(openSet, 3)
@@ -84,7 +85,7 @@ def handle_a_star(req):
 
             # return the path
             pathX, pathY = splitPathIntoXY(fullPath)
-            return AstarResponse(pathX, pathY)
+            return AstarResponse(pathX, pathY, throughObs)
 
         # remove the node that we're about to explore from the frontiers list and add it to the explored list
         openSet.remove(current)
@@ -340,7 +341,7 @@ def getCostBetweenNeighbors(cell1, cell2):
     num2 = makeNumFromXY(cell2X, cell2Y)
 
     if ((occGrid[num1] >= 50) or (occGrid[num2] >= 50)):
-        return float("inf")
+        return 1000
     elif (((cell1X - cell2X) == 0) or ((cell1Y - cell2Y) == 0)):
         return mapRes
     else:

@@ -20,6 +20,7 @@ from std_msgs.msg import Float64
 from geometry_msgs.msg import PointStamped
 import tf
 from std_msgs.msg import Bool
+from subprocess import call
 
 
 def read_odometry(data):
@@ -422,6 +423,7 @@ def makeNumFromXY(x, y):
     return int(number)
 
 def driveWaypointsInitial(robotPath):
+    print "starting to go to goal"
     currentNode = robotPath[0]
     goalNode = robotPath[len(robotPath)-1]
     nextWayPoint = robotPath[1]
@@ -434,7 +436,7 @@ def driveWaypointsInitial(robotPath):
     # set a tolerance for the robot    
     withinXTol = ((goalNode[0] - mapRes) < currentNode[0]) and ((goalNode[0] + mapRes) > currentNode[0])
     withinYTol = ((goalNode[1] - mapRes) < currentNode[1]) and ((goalNode[1] + mapRes) > currentNode[1]) 
-
+    print "starting to drive"
     # if not within the tolerance
     while not (withinXTol and withinYTol):
         # display where the robot is and where the goal is
@@ -552,15 +554,21 @@ def displayObstacles():
         updateGridCells(obstacles, 4)
 
 def moveToGoal(req):
+    print "going to goal"
     goalPos = req.xGoal, req.yGoal
     startPos = getClosestCell(robotX, robotY)
     print startPos
     print goalPos
     updateGridCells([startPos, goalPos],6)
+    print "waiting for a star"
     rospy.wait_for_service('a_star')
     a_star = rospy.ServiceProxy('a_star', Astar)
     updateGridCells([startPos, goalPos],6 )
+    print "running a star"
     returnVal = a_star(startPos[0], startPos[1], goalPos[0], goalPos[1])
+    if (occGrid[makeNumFromXY(startPos[0], startPos[1])] < 50): 
+        if (returnVal.throughObs == 1):
+            return GoToGoalResponse(0)
     path = fixPath(returnVal.pathX, returnVal.pathY)
     updateGridCells(path, 5)
     # calculate the way points of the path

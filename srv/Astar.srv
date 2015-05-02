@@ -5,3 +5,4 @@ float64 goalY
 ---
 float64[] pathX
 float64[] pathY
+int64 throughObs

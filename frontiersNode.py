@@ -16,6 +16,8 @@ from math import pi
 from nav_msgs.msg import GridCells
 from geometry_msgs.msg import Point
 
+from subprocess import call
+
 # returns list of fronteirs
 def identifyFrontiers():
 	allFrontiers = []
@@ -436,11 +438,14 @@ if __name__ == '__main__':
     	rospy.wait_for_service('goal_nav_service')
     	driveToGoal = rospy.ServiceProxy('goal_nav_service', GoToGoal)
     	response = driveToGoal(goal[0], goal[1])
+        if (response.status == 0):
+            break
         print "done with current frontier"
     	preexplorationMove()
         print "identifying new frontiers"
     	frontiersList = identifyFrontiers()
 
+    #call("spd-say 'I'm done.'");
     while (not rospy.is_shutdown()):
     	print "DONE EXPLORING"
     	time.sleep(0.5)

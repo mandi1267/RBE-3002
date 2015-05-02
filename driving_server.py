@@ -201,7 +201,7 @@ def driveUntilFacingPoint(req):
 
     slowDownVal = 0.2
     poleRate = 0.075
-    speed = 1
+    speed = 1.4
     angularVel = speed
     tol = 0.025
     maxProportionalComp = 0.5
