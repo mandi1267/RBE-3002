@@ -15,6 +15,7 @@ from nav_msgs.msg import OccupancyGrid
 from math import pi
 from nav_msgs.msg import GridCells
 from geometry_msgs.msg import Point
+from kobuki_msgs.msg import Led
 
 from subprocess import call
 
@@ -384,6 +385,8 @@ if __name__ == '__main__':
     smallFrontPub2 = rospy.Publisher('smallFrontier2_grid_cells', GridCells, queue_size=3)
     smallFrontPub3 = rospy.Publisher('smallFrontier3_grid_cells', GridCells, queue_size=3)
     smallFrontPub4 = rospy.Publisher('smallFrontier4_grid_cells', GridCells, queue_size=3)
+    led1Pub = rospy.Publisher('mobile_base/commands/led1', Led, queue_size = 3)
+    led2Pub = rospy.Publisher('mobile_base/commands/led2', Led, queue_size = 3)
 
     global mapReceived 
     mapReceived = False
@@ -446,6 +449,18 @@ if __name__ == '__main__':
     	frontiersList = identifyFrontiers()
 
     #call("spd-say 'I'm done.'");
+    i = 1
+    ledmsg = Led()
     while (not rospy.is_shutdown()):
     	print "DONE EXPLORING"
+        if ((i%2) == 0):
+            ledmsg.value = 0
+        else:
+            ledmsg.value = (i+1)/2
+
+        i += 1
+        i = i%6
+
+        led1Pub.publish(ledmsg)
+        led2Pub.publish(ledmsg)
     	time.sleep(0.5)
