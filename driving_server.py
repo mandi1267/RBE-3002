@@ -132,7 +132,7 @@ def rotate(req):
     angle = req.rotateAngle
     tol = 0.15 # tolerance of ~5 degrees
     poleRate = 0.1 # rate at which to send robot Twist messages
-    angularVel = 1 # angular velocity of robot
+    angularVel = 1.4 # angular velocity of robot
     linearVel = 0 # robot is simply rotating around its center and should have no linear motion
     # if the robot should turn right, make the robot rotate the other direction by switching the sign of the angular velocity
     if (angle < 0):
@@ -201,7 +201,7 @@ def driveUntilFacingPoint(req):
 
     slowDownVal = 0.2
     poleRate = 0.075
-    speed = 1.4
+    speed = 2
     angularVel = speed
     tol = 0.025
     maxProportionalComp = 0.5
@@ -219,8 +219,15 @@ def driveUntilFacingPoint(req):
 
     goalInRobotFrame = PointStamped()
 
-    mapListener.waitForTransform("base_footprint", "map", rospy.Time(), rospy.Duration(20))
-    goalInRobotFrame = mapListener.transformPoint("base_footprint", mapFrameGoal)
+    tryAgain = True
+
+    while (tryAgain and (not rospy.is_shutdown())):
+        try: 
+            mapListener.waitForTransform("base_footprint", "map", rospy.Time(), rospy.Duration(10))
+            goalInRobotFrame = mapListener.transformPoint("base_footprint", mapFrameGoal)
+            tryAgain = False
+        except tf.Exception:
+            print "transform failed"
 
     driveSuccessful = True
 
@@ -235,9 +242,9 @@ def driveUntilFacingPoint(req):
             angularVel = -1*speed
 
         if (abs(goalInRobotFrame.point.y) < slowDownVal):
-            # proportional control when within slowDownVal
-            angularVel = angularVel*(1-maxProportionalComp) + maxProportionalComp*angularVel*(abs((goalInRobotFrame.point.y)/slowDownVal))
-       
+            angularVel = .75*angularVel
+
+        
         # publish a twist message
         if bumperState != 0:   
             driveSuccessful = False 
@@ -248,8 +255,15 @@ def driveUntilFacingPoint(req):
 
         goalInRobotFrame = PointStamped()
         # get the point in the robot's frame
-        mapListener.waitForTransform("/base_footprint", "/map", rospy.Time(), rospy.Duration(3.0))
-        goalInRobotFrame = mapListener.transformPoint("base_footprint", mapFrameGoal)
+
+        tryAgain = True
+        while (tryAgain and (not rospy.is_shutdown())):
+            try: 
+                mapListener.waitForTransform("base_footprint", "map", rospy.Time(), rospy.Duration(10))
+                goalInRobotFrame = mapListener.transformPoint("base_footprint", mapFrameGoal)
+                tryAgain = False
+            except tf.Exception:
+                print "transform failed"
         
     for i in range(3):
         publishTwist(0,0)

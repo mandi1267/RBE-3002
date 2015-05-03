@@ -300,6 +300,7 @@ def preexplorationMove():
     driveFunction = rospy.ServiceProxy('drive_straight', DriveStraight)
     print "running drive"
     driveFunction(0.06, speed)
+    time.sleep(3)
 
 def goal_nav_ready(data):
     if (data.data):

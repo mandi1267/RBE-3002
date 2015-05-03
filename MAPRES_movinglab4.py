@@ -455,8 +455,8 @@ def driveWaypointsInitial(robotPath):
         currentNode = getClosestCell(robotX, robotY)
 
         # check if within tolerance
-        withinXTol = ((goalNode[0] - 2*mapRes) < currentNode[0]) and ((goalNode[0] + 2*mapRes) > currentNode[0])
-        withinYTol = ((goalNode[1] - 2*mapRes) < currentNode[1]) and ((goalNode[1] + 2*mapRes) > currentNode[1])
+        withinXTol = ((goalNode[0] - 3*mapRes) < currentNode[0]) and ((goalNode[0] + 3*mapRes) > currentNode[0])
+        withinYTol = ((goalNode[1] - 3*mapRes) < currentNode[1]) and ((goalNode[1] + 3*mapRes) > currentNode[1])
         # if withint he tolreance, don't execute the rest of the loop
         if withinXTol and withinYTol:
             print "all done"
@@ -468,6 +468,13 @@ def driveWaypointsInitial(robotPath):
         rospy.wait_for_service('a_star')        
         a_star = rospy.ServiceProxy('a_star', Astar)
         returnVal = a_star(currentNode[0], currentNode[1], goalNode[0], goalNode[1])
+
+
+        if (occGrid[makeNumFromXY(goalNode[0], goalNode[1])] < 50): 
+            if (occGrid[makeNumFromXY(currentNode[0], currentNode[1])] < 50):
+                if (returnVal.throughObs == 1):
+                    return GoToGoalResponse(0)
+
         path = fixPath(returnVal.pathX, returnVal.pathY)
         # display the path on the map
         updateGridCells(path, 5)
