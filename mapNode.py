@@ -229,9 +229,9 @@ if __name__== "__main__":
     obstacleExpansionDimensionPub = rospy.Publisher('expansion_size', Float64, queue_size = 3)
 
     global expansionWidth
-    expansionWidth = 0.45 # set to even multiple of desiredMapRes
+    expansionWidth = 0.40 # set to even multiple of desiredMapRes
     
-    desiredMapRes = 0.15
+    desiredMapRes = 0.2
     # set deisredMap res to some multiple of actual map res
 
 
