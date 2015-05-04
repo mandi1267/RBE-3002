@@ -56,8 +56,16 @@ def read_odometry(data):
 
     mapFramePoint = PointStamped()
 
-    mapListener.waitForTransform("/map", "/odom", rospy.Time(), rospy.Duration(20))
-    mapFramePoint = mapListener.transformPoint("map", odomFramePoint)
+    global successfulTransform
+
+    try:
+        mapListener.waitForTransform("/map", "/odom", rospy.Time(), rospy.Duration(20))
+        mapFramePoint = mapListener.transformPoint("map", odomFramePoint)
+        successfulTransform = True
+    except tf.Exception:
+        print "odom transform failed"
+        successfulTransform = False
+
 
     odomX = mapFramePoint.point.x
     odomY = mapFramePoint.point.y 
@@ -95,11 +103,19 @@ def driveStraight(req):
 
     driveSuccessful = True
 
+    if successfulTransform == False:
+        return DriveStraightResponse(2)
+
+
     # while the robot hasn't driven far enough, keep driving
     print "start running drive straight loop"
     while (abs(distTraveled) < abs(distance - tol)):
     #while (not ((abs(distTraveled) > abs((distance - tol))) and (abs(distTraveled) < abs((distance + tol))))):
         # if ctrl c is pressed, stop the robot and break from the loop
+        if successfulTransform == False:
+            publishTwist(0,0)
+            return DriveStraightResponse(2)
+
         if rospy.is_shutdown():
             publishTwist(0,0)
             break
