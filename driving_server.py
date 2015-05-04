@@ -227,6 +227,7 @@ def driveUntilFacingPoint(req):
             goalInRobotFrame = mapListener.transformPoint("base_footprint", mapFrameGoal)
             tryAgain = False
         except tf.Exception:
+            return FacePointResponse(2)
             print "transform failed"
 
     driveSuccessful = True

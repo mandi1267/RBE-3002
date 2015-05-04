@@ -489,7 +489,10 @@ def driveWaypointsInitial(robotPath):
         # turn until faceing that waypoint
         rospy.wait_for_service('face_point')
         face_point = rospy.ServiceProxy('face_point', FacePoint)
-        returnVal = face_point(nextWayPoint[0], nextWayPoint[1])  
+        returnVal = face_point(nextWayPoint[0], nextWayPoint[1])
+        if returnVal.status == 2:
+            return 0
+
 
         #changeAngleBetweenWaypoints(prevNode, lastRecordedNode, nextWayPoint) 
 

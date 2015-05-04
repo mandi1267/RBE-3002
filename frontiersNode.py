@@ -465,3 +465,6 @@ if __name__ == '__main__':
         led1Pub.publish(ledmsg)
         led2Pub.publish(ledmsg)
     	time.sleep(0.5)
+    ledmsg.value = 0
+    led1Pub.publish(ledmsg)
+    led2Pub.publish(ledmsg)
